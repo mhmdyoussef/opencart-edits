@@ -120,14 +120,12 @@ class ModelCatalogProduct extends Model {
 		if (isset($data['product_seo_url'])) {
 			foreach ($data['product_seo_url'] as $store_id => $language) {
 				foreach ($language as $language_id => $keyword) {
-					// TODO SEO
 					if (empty($keyword) && isset($data['product_description'][$language_id]) && isset($data['product_description'][$language_id]['name'])) {
 						$keyword = $data['product_description'][$language_id]['name'];
 					}
-					// TODO SEO END
 					if (!empty($keyword)) {
 						$keyword = str_replace((int)$product_id . '-', '', $keyword);
-						$this->db->query("INSERT INTO " . DB_PREFIX . "seo_url SET store_id = '" . (int)$store_id . "', language_id = '" . (int)$language_id . "', query = 'product_id=" . (int)$product_id . "', keyword = '" . (int)$product_id . '-' . $this->db->escape($keyword) . "'");
+						$this->db->query("INSERT INTO " . DB_PREFIX . "seo_url SET store_id = '" . (int)$store_id . "', language_id = '" . (int)$language_id . "', query = 'product_id=" . (int)$product_id . "', keyword = '" . (int)$product_id . '-' . str_replace('/', '', str_replace(',', '', str_replace(' ', '-', str_replace('&', '', str_replace('amp;', '', $this->db->escape($keyword)))))) . "'");
 					}
 				}
 			}
@@ -145,8 +143,6 @@ class ModelCatalogProduct extends Model {
 		return $product_id;
 	}
 
-	
-	
 	public function editProduct($product_id, $data) {
 		$this->db->query("UPDATE " . DB_PREFIX . "product SET model = '" . $this->db->escape($data['model']) . "', sku = '" . $this->db->escape($data['sku']) . "', upc = '" . $this->db->escape($data['upc']) . "', ean = '" . $this->db->escape($data['ean']) . "', jan = '" . $this->db->escape($data['jan']) . "', isbn = '" . $this->db->escape($data['isbn']) . "', mpn = '" . $this->db->escape($data['mpn']) . "', location = '" . $this->db->escape($data['location']) . "', quantity = '" . (int)$data['quantity'] . "', minimum = '" . (int)$data['minimum'] . "', subtract = '" . (int)$data['subtract'] . "', stock_status_id = '" . (int)$data['stock_status_id'] . "', date_available = '" . $this->db->escape($data['date_available']) . "', manufacturer_id = '" . (int)$data['manufacturer_id'] . "', shipping = '" . (int)$data['shipping'] . "', price = '" . (float)$data['price'] . "', points = '" . (int)$data['points'] . "', weight = '" . (float)$data['weight'] . "', weight_class_id = '" . (int)$data['weight_class_id'] . "', length = '" . (float)$data['length'] . "', width = '" . (float)$data['width'] . "', height = '" . (float)$data['height'] . "', length_class_id = '" . (int)$data['length_class_id'] . "', status = '" . (int)$data['status'] . "', tax_class_id = '" . (int)$data['tax_class_id'] . "', sort_order = '" . (int)$data['sort_order'] . "', date_modified = NOW() WHERE product_id = '" . (int)$product_id . "'");
 
@@ -292,9 +288,12 @@ class ModelCatalogProduct extends Model {
 		if (isset($data['product_seo_url'])) {
 			foreach ($data['product_seo_url']as $store_id => $language) {
 				foreach ($language as $language_id => $keyword) {
-					if (!empty($keyword)) {
-						$this->db->query("INSERT INTO " . DB_PREFIX . "seo_url SET store_id = '" . (int)$store_id . "', language_id = '" . (int)$language_id . "', query = 'product_id=" . (int)$product_id . "', keyword = '" . $this->db->escape($keyword) . "'");
+					if (empty($keyword) && isset($data['product_description'][$language_id]) && isset($data['product_description'][$language_id]['name'])) {
+						$keyword = $data['product_description'][$language_id]['name'];
 					}
+					if (!empty($keyword)) {
+						$keyword = str_replace((int)$product_id . '-', '', $keyword);
+						$this->db->query("INSERT INTO " . DB_PREFIX . "seo_url SET store_id = '" . (int)$store_id . "', language_id = '" . (int)$language_id . "', query = 'product_id=" . (int)$product_id . "', keyword = '" . (int)$product_id . '-' . str_replace('/', '', str_replace(',', '', str_replace(' ', '-', str_replace('&', '', str_replace('amp;', '', $this->db->escape($keyword)))))) . "'");					}
 				}
 			}
 		}
@@ -398,6 +397,7 @@ class ModelCatalogProduct extends Model {
 		$sql .= " GROUP BY p.product_id";
 
 		$sort_data = array(
+		    'p.product_id',
 			'pd.name',
 			'p.model',
 			'p.price',
